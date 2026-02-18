@@ -3,7 +3,7 @@ import { createRouter, createMemoryHistory, createWebHistory, createWebHashHisto
 import routes from './routes'
 import { isLoggedIn } from 'src/services/auth'
 
-export default defineRouter(function (/* { store, ssrContext } */) {
+export default defineRouter(function () {
   const createHistory = process.env.SERVER
     ? createMemoryHistory
     : (process.env.VUE_ROUTER_MODE === 'history' ? createWebHistory : createWebHashHistory)
@@ -15,15 +15,9 @@ export default defineRouter(function (/* { store, ssrContext } */) {
   })
 
   Router.beforeEach((to, from, next) => {
-    const publicPaths = ['/auth', '/hello'] 
-    const isPublic = publicPaths.includes(to.path)
-
-    if (!isPublic && !isLoggedIn()) {
-      next('/auth')
-      return
-    }
-
-    next()
+    if (to.path.startsWith('/auth')) return next()
+    if (!isLoggedIn()) return next('/auth')
+    return next()
   })
 
   return Router

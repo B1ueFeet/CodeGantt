@@ -17,9 +17,7 @@
         <q-item>
           <q-btn flat icon="logout" @click="doLogout" />
         </q-item>
-
       </q-list>
-
     </q-drawer>
 
     <q-page-container>
@@ -29,14 +27,10 @@
 </template>
 
 <script>
-import { defineComponent, ref } from 'vue'
 import { logout } from 'src/services/auth'
 
-export default defineComponent({
+export default {
   name: 'MainLayout',
-
-  components: {
-  },
 
   data() {
     return {
@@ -53,5 +47,5 @@ export default defineComponent({
       this.$router.push('/auth')
     }
   }
-})
+}
 </script>

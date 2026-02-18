@@ -1,26 +1,12 @@
-import { boot } from 'quasar/wrappers'
 import axios from 'axios'
 
-const API_BASE_URL = 'http://localhost:8080'   // back-gantt
-const AUTH_BASE_URL = 'http://localhost:8081'  // auth-service
+const api = axios.create({ baseURL: '/api' })
+const authApi = axios.create({ baseURL: '/auth' })
 
-const api = axios.create({
-  baseURL: API_BASE_URL
-})
-
-const authApi = axios.create({
-  baseURL: AUTH_BASE_URL
-})
-
-api.interceptors.request.use(config => {
-  const token = localStorage.getItem('token')
-  if (token) config.headers.Authorization = `Bearer ${token}`
-  return config
-})
-
-export default boot(({ app }) => {
+export default ({ app }) => {
+  app.config.globalProperties.$axios = axios
   app.config.globalProperties.$api = api
   app.config.globalProperties.$authApi = authApi
-})
+}
 
-export { api, authApi, API_BASE_URL, AUTH_BASE_URL }
+export { api, authApi }

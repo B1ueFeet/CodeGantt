@@ -82,10 +82,14 @@ export default {
       this.error = ''
       this.loading = true
       try {
-        await authService.login(this.loginForm.identifier, this.loginForm.password)
+        await login(this.loginForm.identifier, this.loginForm.password)
         this.$router.push({ path: '/' })
       } catch (e) {
-        this.error = e?.data?.message || e?.message || 'No se pudo iniciar sesión'
+        this.error =
+          e?.response?.data?.message ||
+          e?.response?.statusText ||
+          e?.message ||
+          'No se pudo iniciar sesión'
       } finally {
         this.loading = false
       }
@@ -95,18 +99,25 @@ export default {
       this.error = ''
       this.loading = true
       try {
-        await authService.register({
-          username: this.registerForm.username,
-          email: this.registerForm.email,
-          password: this.registerForm.password
+        await register({
+          firstName: this.reg.firstName,
+          lastName: this.reg.lastName,
+          username: this.reg.username,
+          email: this.reg.email,
+          password: this.reg.password
         })
-        this.$router.push({ path: '/' })
+        this.tab = 'login'
       } catch (e) {
-        this.error = e?.data?.message || e?.message || 'No se pudo registrar'
+        this.error =
+          e?.response?.data?.message ||
+          e?.response?.statusText ||
+          e?.message ||
+          'No se pudo registrar'
       } finally {
         this.loading = false
       }
     }
+
   }
 }
 </script>

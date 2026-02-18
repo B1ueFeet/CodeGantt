@@ -94,8 +94,6 @@
 </template>
 
 <script>
-// Options API + JS
-import axios from 'axios'
 
 export default {
   name: 'TestEndpointPage',
@@ -129,7 +127,7 @@ export default {
     async listUsers() {
       this.loading.users = true
       try {
-        const res = await axios.get('/api/users')
+        const res = await this.$api.get('/api/users')
         this.pretty(res.data)
       } catch (e) {
         this.pretty(this.normalizeError(e))
@@ -149,7 +147,7 @@ export default {
           email: `demo_${Date.now()}@test.com`,
           password: '1234'
         }
-        const res = await axios.post('/api/users', demo)
+        const res = await this.$api.post('/api/users', demo)
         this.state.userId = res.data?.id || ''
         this.pretty(res.data)
       } catch (e) {
@@ -162,7 +160,7 @@ export default {
     async listProjects() {
       this.loading.projects = true
       try {
-        const res = await axios.get('/api/projects')
+        const res = await this.$api.get('/api/projects')
         this.pretty(res.data)
       } catch (e) {
         this.pretty(this.normalizeError(e))
@@ -196,7 +194,7 @@ export default {
         // Necesita ownerId: usa el userId escrito o crea uno demo si está vacío
         let ownerId = this.state.userId
         if (!ownerId) {
-          const userRes = await axios.post('/api/users', {
+          const userRes = await this.$api.post('/api/users', {
             role: 'USER',
             firstName: 'Owner',
             lastName: 'Demo',
@@ -213,7 +211,7 @@ export default {
           description: 'Creado desde TestEndpointPage',
           ownerId
         }
-        const res = await axios.post('/api/projects', demo)
+        const res = await this.$api.post('/api/projects', demo)
         this.state.projectId = res.data?.id || ''
         this.state.projectIdForTasks = res.data?.id || this.state.projectIdForTasks
         this.pretty(res.data)
@@ -232,7 +230,7 @@ export default {
           this.pretty({ error: 'Pon un projectId primero (o crea un proyecto demo).' })
           return
         }
-        const res = await axios.get(`/api/tasks/by-project/${pid}`)
+        const res = await this.$api.get(`/api/tasks/by-project/${pid}`)
         this.pretty(res.data)
       } catch (e) {
         this.pretty(this.normalizeError(e))
@@ -263,7 +261,7 @@ export default {
           endDate: `${yyyy}-${mm}-${dd}`
         }
 
-        const res = await axios.post('/api/tasks', demo)
+        const res = await this.$api.post('/api/tasks', demo)
         this.state.taskId = res.data?.id || ''
         this.pretty(res.data)
       } catch (e) {

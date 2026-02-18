@@ -72,10 +72,16 @@ export default defineConfig((/* ctx */) => {
           target: 'http://localhost:8080',
           changeOrigin: true,
           secure: false
+        },
+        '/auth': {                    
+          target: 'http://localhost:8081',
+          changeOrigin: true,
+          secure: false
         }
       },
-      open: true // opens browser window automatically
+      open: true
     }
+
     ,
     // https://v2.quasar.dev/quasar-cli-vite/quasar-config-file#framework
     framework: {
