@@ -1,47 +1,26 @@
-import { defineBoot } from '#q-app/wrappers'
+import { boot } from 'quasar/wrappers'
 import axios from 'axios'
 
-// API de tu app (usa proxy en dev)
+const API_BASE_URL = 'http://localhost:8080'   // back-gantt
+const AUTH_BASE_URL = 'http://localhost:8081'  // auth-service
+
 const api = axios.create({
-  baseURL: '' // importante: rutas tipo /api/...
+  baseURL: API_BASE_URL
 })
 
-// Request interceptor: agrega token si existe
-api.interceptors.request.use((config) => {
+const authApi = axios.create({
+  baseURL: AUTH_BASE_URL
+})
+
+api.interceptors.request.use(config => {
   const token = localStorage.getItem('token')
-  if (token) {
-    config.headers = config.headers || {}
-    config.headers.Authorization = `Bearer ${token}`
-  }
+  if (token) config.headers.Authorization = `Bearer ${token}`
   return config
 })
 
-// Response interceptor: normaliza errores (opcional pero útil)
-api.interceptors.response.use(
-  (res) => res,
-  (err) => {
-    const normalized = {
-      message: err?.message,
-      status: err?.response?.status,
-      data: err?.response?.data
-    }
-
-    // Opcional: si token expiró o es inválido, limpias sesión
-    if (normalized.status === 401) {
-      localStorage.removeItem('token')
-      localStorage.removeItem('user')
-    }
-
-    return Promise.reject(normalized)
-  }
-)
-
-export default defineBoot(({ app }) => {
-  // Para Options API:
-  // this.$axios -> axios "crudo"
-  // this.$api   -> axios configurado con baseURL + interceptors
-  app.config.globalProperties.$axios = axios
+export default boot(({ app }) => {
   app.config.globalProperties.$api = api
+  app.config.globalProperties.$authApi = authApi
 })
 
-export { api }
+export { api, authApi, API_BASE_URL, AUTH_BASE_URL }

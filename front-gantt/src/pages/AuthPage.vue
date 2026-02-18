@@ -18,27 +18,11 @@
 
         <!-- LOGIN -->
         <div v-if="tab === 'login'" class="q-gutter-md">
-          <q-input
-            v-model="loginForm.identifier"
-            label="Email o usuario"
-            outlined dense
-            autocomplete="username"
-          />
-          <q-input
-            v-model="loginForm.password"
-            label="Contraseña"
-            type="password"
-            outlined dense
-            autocomplete="current-password"
-          />
+          <q-input v-model="loginForm.identifier" label="Email o usuario" outlined dense autocomplete="username" />
+          <q-input v-model="loginForm.password" label="Contraseña" type="password" outlined dense
+            autocomplete="current-password" />
 
-          <q-btn
-            label="Entrar"
-            color="primary"
-            class="full-width"
-            :loading="loading"
-            @click="doLogin"
-          />
+          <q-btn label="Entrar" color="primary" class="full-width" :loading="loading" @click="doLogin" />
         </div>
 
         <!-- REGISTER -->
@@ -54,15 +38,10 @@
 
           <q-input v-model="reg.username" label="Usuario" outlined dense autocomplete="username" />
           <q-input v-model="reg.email" label="Email" outlined dense autocomplete="email" />
-          <q-input v-model="reg.password" label="Contraseña" type="password" outlined dense autocomplete="new-password" />
+          <q-input v-model="reg.password" label="Contraseña" type="password" outlined dense
+            autocomplete="new-password" />
 
-          <q-btn
-            label="Crear cuenta"
-            color="secondary"
-            class="full-width"
-            :loading="loading"
-            @click="doRegister"
-          />
+          <q-btn label="Crear cuenta" color="secondary" class="full-width" :loading="loading" @click="doRegister" />
         </div>
 
         <q-banner v-if="error" class="q-mt-md" rounded dense>
@@ -79,7 +58,7 @@ import { login, register } from 'src/services/auth'
 export default {
   name: 'AuthPage',
 
-  data () {
+  data() {
     return {
       tab: 'login',
       loading: false,
@@ -99,11 +78,11 @@ export default {
   },
 
   methods: {
-    async doLogin () {
+    async doLogin() {
       this.error = ''
       this.loading = true
       try {
-        await login(this.loginForm)
+        await authService.login(this.loginForm.identifier, this.loginForm.password)
         this.$router.push({ path: '/' })
       } catch (e) {
         this.error = e?.data?.message || e?.message || 'No se pudo iniciar sesión'
@@ -112,11 +91,15 @@ export default {
       }
     },
 
-    async doRegister () {
+    async doRegister() {
       this.error = ''
       this.loading = true
       try {
-        await register(this.reg)
+        await authService.register({
+          username: this.registerForm.username,
+          email: this.registerForm.email,
+          password: this.registerForm.password
+        })
         this.$router.push({ path: '/' })
       } catch (e) {
         this.error = e?.data?.message || e?.message || 'No se pudo registrar'

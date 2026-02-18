@@ -39,7 +39,8 @@
 
           <q-card-section class="q-gutter-sm">
             <q-btn label="Listar proyectos" color="primary" @click="listProjects" :loading="loading.projects" />
-            <q-btn label="Crear proyecto demo" color="secondary" @click="createProjectDemo" :loading="loading.createProject" />
+            <q-btn label="Crear proyecto demo" color="secondary" @click="createProjectDemo"
+              :loading="loading.createProject" />
 
             <q-input v-model="state.projectId" label="projectId (UUID)" dense outlined />
           </q-card-section>
@@ -65,18 +66,9 @@
               </div>
             </div>
 
-            <q-btn
-              label="Listar tareas por proyecto"
-              color="primary"
-              @click="listTasksByProject"
-              :loading="loading.tasks"
-            />
-            <q-btn
-              label="Crear tarea demo"
-              color="secondary"
-              @click="createTaskDemo"
-              :loading="loading.createTask"
-            />
+            <q-btn label="Listar tareas por proyecto" color="primary" @click="listTasksByProject"
+              :loading="loading.tasks" />
+            <q-btn label="Crear tarea demo" color="secondary" @click="createTaskDemo" :loading="loading.createTask" />
           </q-card-section>
         </q-card>
       </div>
@@ -92,14 +84,8 @@
           <q-separator />
 
           <q-card-section>
-            <q-input
-              v-model="output"
-              type="textarea"
-              autogrow
-              outlined
-              readonly
-              placeholder="Aquí verás las respuestas del backend..."
-            />
+            <q-input v-model="output" type="textarea" autogrow outlined readonly
+              placeholder="Aquí verás las respuestas del backend..." />
           </q-card-section>
         </q-card>
       </div>
@@ -114,7 +100,7 @@ import axios from 'axios'
 export default {
   name: 'TestEndpointPage',
 
-  data () {
+  data() {
     return {
       baseUrl: '',
       output: '',
@@ -136,11 +122,11 @@ export default {
   },
 
   methods: {
-    pretty (obj) {
+    pretty(obj) {
       this.output = JSON.stringify(obj, null, 2)
     },
 
-    async listUsers () {
+    async listUsers() {
       this.loading.users = true
       try {
         const res = await axios.get('/api/users')
@@ -152,7 +138,7 @@ export default {
       }
     },
 
-    async createUserDemo () {
+    async createUserDemo() {
       this.loading.createUser = true
       try {
         const demo = {
@@ -173,7 +159,7 @@ export default {
       }
     },
 
-    async listProjects () {
+    async listProjects() {
       this.loading.projects = true
       try {
         const res = await axios.get('/api/projects')
@@ -185,7 +171,26 @@ export default {
       }
     },
 
-    async createProjectDemo () {
+    async callEndpoint(method, endpoint, body = null) {
+      this.loading = true
+      this.error = null
+      this.response = null
+
+      try {
+        const config = { method, url: endpoint }
+        if (body) config.data = body
+
+        const { data } = await this.$api(config)
+        this.response = data
+
+      } catch (err) {
+        this.error = err.response?.data || err.message
+      } finally {
+        this.loading = false
+      }
+    },
+
+    async createProjectDemo() {
       this.loading.createProject = true
       try {
         // Necesita ownerId: usa el userId escrito o crea uno demo si está vacío
@@ -219,7 +224,7 @@ export default {
       }
     },
 
-    async listTasksByProject () {
+    async listTasksByProject() {
       this.loading.tasks = true
       try {
         const pid = this.state.projectIdForTasks || this.state.projectId
@@ -236,7 +241,7 @@ export default {
       }
     },
 
-    async createTaskDemo () {
+    async createTaskDemo() {
       this.loading.createTask = true
       try {
         const projectId = this.state.projectIdForTasks || this.state.projectId
@@ -268,7 +273,7 @@ export default {
       }
     },
 
-    normalizeError (e) {
+    normalizeError(e) {
       // axios error normalizado
       return {
         message: e?.message,

@@ -1,38 +1,30 @@
-import { api } from 'boot/axios'
+import { authApi } from 'boot/axios'
 
-const KEY_USER = 'user'
-const KEY_TOKEN = 'token'
+export default {
+  async login(identifier, password) {
+    const { data } = await authApi.post('/auth/login', {
+      login: identifier,
+      password
+    })
 
-export function getUser () {
-  const raw = localStorage.getItem(KEY_USER)
-  return raw ? JSON.parse(raw) : null
-}
+    localStorage.setItem('token', data.token)
+    return data
+  },
 
-export function isLoggedIn () {
-  return !!localStorage.getItem(KEY_TOKEN)
-}
+  async register({ username, email, password }) {
+    const { data } = await authApi.post('/auth/register', {
+      username,
+      email,
+      password
+    })
+    return data
+  },
 
-export async function login ({ identifier, password }) {
-  // identifier = email O username
-  const res = await api.post('/api/auth/login', { identifier, password })
-  const { token, user } = res.data
+  logout() {
+    localStorage.removeItem('token')
+  },
 
-  localStorage.setItem(KEY_TOKEN, token)
-  localStorage.setItem(KEY_USER, JSON.stringify(user))
-  return user
-}
-
-export async function register (payload) {
-  // payload: { firstName,lastName,username,email,password }
-  const res = await api.post('/api/auth/register', payload)
-  const { token, user } = res.data
-
-  localStorage.setItem(KEY_TOKEN, token)
-  localStorage.setItem(KEY_USER, JSON.stringify(user))
-  return user
-}
-
-export function logout () {
-  localStorage.removeItem(KEY_TOKEN)
-  localStorage.removeItem(KEY_USER)
+  getToken() {
+    return localStorage.getItem('token')
+  }
 }
