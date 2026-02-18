@@ -1,5 +1,7 @@
 package com.bf.resource;
 
+import jakarta.annotation.security.PermitAll;
+import jakarta.annotation.security.RolesAllowed;
 import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.MediaType;
 import com.bf.dtos.UserDTOs;
@@ -31,6 +33,7 @@ public class UserResource {
     }
 
     @POST
+    @PermitAll
     public UserDTOs.UserResponse create(UserDTOs.UserCreateRequest req) {
         return service.create(req);
     }
@@ -43,6 +46,8 @@ public class UserResource {
 
     @DELETE
     @Path("/{id}")
+    @RolesAllowed("ADMIN")
+
     public void delete(@PathParam("id") UUID id) {
         service.delete(id);
     }

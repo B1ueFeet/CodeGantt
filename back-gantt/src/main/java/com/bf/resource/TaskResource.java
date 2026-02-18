@@ -1,5 +1,6 @@
 package com.bf.resource;
 
+import jakarta.annotation.security.RolesAllowed;
 import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.MediaType;
 import com.bf.dtos.TaskDTOs;
@@ -11,6 +12,7 @@ import java.util.UUID;
 @Path("/api/tasks")
 @Produces(MediaType.APPLICATION_JSON)
 @Consumes(MediaType.APPLICATION_JSON)
+@RolesAllowed({"USER","ADMIN"})
 public class TaskResource {
 
     private final TaskService service;
