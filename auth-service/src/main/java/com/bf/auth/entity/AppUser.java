@@ -23,8 +23,7 @@ public class AppUser extends PanacheEntityBase {
   public String passwordHash;
 
   @Column(name = "role", nullable = false, length = 20)
-  public String role; // ADMIN / USER
-
+  public String role; 
   @Column(name = "created_at", nullable = false)
   public OffsetDateTime createdAt;
 
