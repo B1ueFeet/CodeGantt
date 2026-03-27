@@ -3,7 +3,6 @@ package com.bf.Model;
 import io.quarkus.hibernate.orm.panache.PanacheEntityBase;
 import jakarta.persistence.*;
 
-import java.time.LocalDate;
 import java.time.OffsetDateTime;
 import java.util.UUID;
 
@@ -25,11 +24,11 @@ public class Task extends PanacheEntityBase {
     @Column(columnDefinition = "text")
     public String description;
 
-    @Column(name = "start_date")
-    public LocalDate startDate;
+    @Column(name = "start_at", nullable = false)
+    public OffsetDateTime startAt;
 
-    @Column(name = "end_date")
-    public LocalDate endDate;
+    @Column(name = "end_at", nullable = false)
+    public OffsetDateTime endAt;
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false, length = 30)
@@ -46,19 +45,45 @@ public class Task extends PanacheEntityBase {
 
     @PrePersist
     void prePersist() {
-        if (id == null) id = UUID.randomUUID();
+        if (id == null) {
+            id = UUID.randomUUID();
+        }
+
         var now = OffsetDateTime.now();
         createdAt = now;
         updatedAt = now;
-        if (status == null) status = TaskStatus.TODO;
-        if (progress < 0) progress = 0;
-        if (progress > 100) progress = 100;
+
+        if (startAt == null) {
+            startAt = now;
+        }
+
+        if (endAt == null) {
+            endAt = startAt.plusHours(2);
+        }
+
+        if (status == null) {
+            status = TaskStatus.TODO;
+        }
+
+        if (progress < 0) {
+            progress = 0;
+        }
+
+        if (progress > 100) {
+            progress = 100;
+        }
     }
 
     @PreUpdate
     void preUpdate() {
         updatedAt = OffsetDateTime.now();
-        if (progress < 0) progress = 0;
-        if (progress > 100) progress = 100;
+
+        if (progress < 0) {
+            progress = 0;
+        }
+
+        if (progress > 100) {
+            progress = 100;
+        }
     }
 }

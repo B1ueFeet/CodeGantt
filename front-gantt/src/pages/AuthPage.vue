@@ -16,16 +16,33 @@
 
         <q-separator class="q-my-sm" />
 
-        <!-- LOGIN -->
         <div v-if="tab === 'login'" class="q-gutter-md">
-          <q-input v-model="loginForm.identifier" label="Email o usuario" outlined dense autocomplete="username" />
-          <q-input v-model="loginForm.password" label="Contraseña" type="password" outlined dense
-            autocomplete="current-password" />
+          <q-input
+            v-model="loginForm.identifier"
+            label="Email o usuario"
+            outlined
+            dense
+            autocomplete="username"
+          />
 
-          <q-btn label="Entrar" color="primary" class="full-width" :loading="loading" @click="doLogin" />
+          <q-input
+            v-model="loginForm.password"
+            label="Contraseña"
+            type="password"
+            outlined
+            dense
+            autocomplete="current-password"
+          />
+
+          <q-btn
+            label="Entrar"
+            color="primary"
+            class="full-width"
+            :loading="loading"
+            @click="doLogin"
+          />
         </div>
 
-        <!-- REGISTER -->
         <div v-else class="q-gutter-md">
           <div class="row q-col-gutter-sm">
             <div class="col">
@@ -38,13 +55,18 @@
 
           <q-input v-model="reg.username" label="Usuario" outlined dense autocomplete="username" />
           <q-input v-model="reg.email" label="Email" outlined dense autocomplete="email" />
-          <q-input v-model="reg.password" label="Contraseña" type="password" outlined dense
-            autocomplete="new-password" />
+          <q-input v-model="reg.password" label="Contraseña" type="password" outlined dense autocomplete="new-password" />
 
-          <q-btn label="Crear cuenta" color="secondary" class="full-width" :loading="loading" @click="doRegister" />
+          <q-btn
+            label="Crear cuenta"
+            color="secondary"
+            class="full-width"
+            :loading="loading"
+            @click="doRegister"
+          />
         </div>
 
-        <q-banner v-if="error" class="q-mt-md" rounded dense>
+        <q-banner v-if="error" class="q-mt-md bg-red-1 text-negative" rounded dense>
           {{ error }}
         </q-banner>
       </q-card-section>
@@ -81,14 +103,15 @@ export default {
     async doLogin() {
       this.error = ''
       this.loading = true
+
       try {
         await login(this.loginForm.identifier, this.loginForm.password)
-        this.$router.push({ path: '/' })
-      } catch (e) {
+        this.$router.push('/')
+      } catch (error) {
         this.error =
-          e?.response?.data?.message ||
-          e?.response?.statusText ||
-          e?.message ||
+          error?.response?.data?.message ||
+          error?.response?.statusText ||
+          error?.message ||
           'No se pudo iniciar sesión'
       } finally {
         this.loading = false
@@ -98,6 +121,7 @@ export default {
     async doRegister() {
       this.error = ''
       this.loading = true
+
       try {
         await register({
           firstName: this.reg.firstName,
@@ -106,18 +130,18 @@ export default {
           email: this.reg.email,
           password: this.reg.password
         })
+
         this.tab = 'login'
-      } catch (e) {
+      } catch (error) {
         this.error =
-          e?.response?.data?.message ||
-          e?.response?.statusText ||
-          e?.message ||
+          error?.response?.data?.message ||
+          error?.response?.statusText ||
+          error?.message ||
           'No se pudo registrar'
       } finally {
         this.loading = false
       }
     }
-
   }
 }
 </script>

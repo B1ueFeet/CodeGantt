@@ -50,7 +50,6 @@ public class ProjectResource {
         service.delete(id);
     }
 
-    // --- Members ---
     @GET
     @Path("/{id}/members")
     public List<ProjectMember> members(@PathParam("id") UUID projectId) {

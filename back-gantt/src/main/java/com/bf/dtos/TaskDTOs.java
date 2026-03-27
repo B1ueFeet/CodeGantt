@@ -1,7 +1,8 @@
 package com.bf.dtos;
+
 import com.bf.Model.TaskStatus;
 
-import java.time.LocalDate;
+import java.time.OffsetDateTime;
 import java.util.UUID;
 
 public class TaskDTOs {
@@ -10,15 +11,17 @@ public class TaskDTOs {
             UUID projectId,
             String name,
             String description,
-            LocalDate startDate,
-            LocalDate endDate
+            OffsetDateTime startAt,
+            OffsetDateTime endAt,
+            TaskStatus status,
+            Integer progress
     ) {}
 
     public record TaskUpdateRequest(
             String name,
             String description,
-            LocalDate startDate,
-            LocalDate endDate,
+            OffsetDateTime startAt,
+            OffsetDateTime endAt,
             TaskStatus status,
             Integer progress
     ) {}
@@ -28,8 +31,8 @@ public class TaskDTOs {
             UUID projectId,
             String name,
             String description,
-            LocalDate startDate,
-            LocalDate endDate,
+            OffsetDateTime startAt,
+            OffsetDateTime endAt,
             TaskStatus status,
             int progress
     ) {}

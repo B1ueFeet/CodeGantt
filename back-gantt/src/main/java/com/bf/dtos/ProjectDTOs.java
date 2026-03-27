@@ -6,8 +6,7 @@ public class ProjectDTOs {
 
     public record ProjectCreateRequest(
             String name,
-            String description,
-            UUID ownerId
+            String description
     ) {}
 
     public record ProjectUpdateRequest(

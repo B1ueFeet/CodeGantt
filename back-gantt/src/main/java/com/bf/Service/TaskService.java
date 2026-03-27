@@ -29,24 +29,43 @@ public class TaskService {
 
     public TaskDTOs.TaskResponse get(UUID id) {
         var t = tasks.findById(id);
-        if (t == null) throw new IllegalArgumentException("Tarea no existe");
+        if (t == null) {
+            throw new IllegalArgumentException("Tarea no existe");
+        }
         return toResponse(t);
     }
 
     @Transactional
     public TaskDTOs.TaskResponse create(TaskDTOs.TaskCreateRequest req) {
+        if (req.projectId() == null) {
+            throw new IllegalArgumentException("projectId es obligatorio");
+        }
+
+        if (req.name() == null || req.name().isBlank()) {
+            throw new IllegalArgumentException("El nombre de la tarea es obligatorio");
+        }
+
         var p = projects.findById(req.projectId());
-        if (p == null) throw new IllegalArgumentException("projectId no existe");
+        if (p == null) {
+            throw new IllegalArgumentException("projectId no existe");
+        }
+
+        var startAt = req.startAt() != null ? req.startAt() : OffsetDateTime.now();
+        var endAt = req.endAt() != null ? req.endAt() : startAt.plusHours(2);
+
+        if (endAt.isBefore(startAt)) {
+            throw new IllegalArgumentException("endAt no puede ser menor que startAt");
+        }
 
         var t = new Task();
         t.id = UUID.randomUUID();
         t.project = p;
-        t.name = req.name();
+        t.name = req.name().trim();
         t.description = req.description();
-        t.startDate = req.startDate();
-        t.endDate = req.endDate();
-        t.status = TaskStatus.TODO;
-        t.progress = 0;
+        t.startAt = startAt;
+        t.endAt = endAt;
+        t.status = req.status() != null ? req.status() : TaskStatus.TODO;
+        t.progress = req.progress() != null ? Math.max(0, Math.min(100, req.progress())) : 0;
         t.createdAt = OffsetDateTime.now();
         t.updatedAt = OffsetDateTime.now();
 
@@ -57,23 +76,66 @@ public class TaskService {
     @Transactional
     public TaskDTOs.TaskResponse update(UUID id, TaskDTOs.TaskUpdateRequest req) {
         var t = tasks.findById(id);
-        if (t == null) throw new IllegalArgumentException("Tarea no existe");
+        if (t == null) {
+            throw new IllegalArgumentException("Tarea no existe");
+        }
 
-        if (req.name() != null) t.name = req.name();
-        if (req.description() != null) t.description = req.description();
-        if (req.startDate() != null) t.startDate = req.startDate();
-        if (req.endDate() != null) t.endDate = req.endDate();
-        if (req.status() != null) t.status = req.status();
-        if (req.progress() != null) t.progress = Math.max(0, Math.min(100, req.progress()));
+        if (req.name() != null) {
+            if (req.name().isBlank()) {
+                throw new IllegalArgumentException("El nombre de la tarea no puede estar vacío");
+            }
+            t.name = req.name().trim();
+        }
+
+        if (req.description() != null) {
+            t.description = req.description();
+        }
+
+        var nextStartAt = req.startAt() != null ? req.startAt() : t.startAt;
+        var nextEndAt = req.endAt() != null ? req.endAt() : t.endAt;
+
+        if (nextStartAt == null) {
+            nextStartAt = OffsetDateTime.now();
+        }
+
+        if (nextEndAt == null) {
+            nextEndAt = nextStartAt.plusHours(2);
+        }
+
+        if (nextEndAt.isBefore(nextStartAt)) {
+            throw new IllegalArgumentException("endAt no puede ser menor que startAt");
+        }
+
+        t.startAt = nextStartAt;
+        t.endAt = nextEndAt;
+
+        if (req.status() != null) {
+            t.status = req.status();
+        }
+
+        if (req.progress() != null) {
+            t.progress = Math.max(0, Math.min(100, req.progress()));
+        }
+
+        if (t.status == TaskStatus.DONE && t.progress < 100) {
+            t.progress = 100;
+        }
+
+        if (t.status == TaskStatus.TODO && t.progress == 100) {
+            t.progress = 0;
+        }
 
         t.updatedAt = OffsetDateTime.now();
+
         return toResponse(t);
     }
 
     @Transactional
     public void delete(UUID id) {
         boolean deleted = tasks.deleteById(id);
-        if (!deleted) throw new IllegalArgumentException("Tarea no existe");
+        if (!deleted) {
+            throw new IllegalArgumentException("Tarea no existe");
+        }
     }
 
     private TaskDTOs.TaskResponse toResponse(Task t) {
@@ -82,8 +144,8 @@ public class TaskService {
                 t.project.id,
                 t.name,
                 t.description,
-                t.startDate,
-                t.endDate,
+                t.startAt,
+                t.endAt,
                 t.status,
                 t.progress
         );

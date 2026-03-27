@@ -1,9 +1,14 @@
-import { defineRouter } from '#q-app/wrappers'
-import { createRouter, createMemoryHistory, createWebHistory, createWebHashHistory } from 'vue-router'
+import { route } from 'quasar/wrappers'
+import {
+  createMemoryHistory,
+  createRouter,
+  createWebHashHistory,
+  createWebHistory
+} from 'vue-router'
 import routes from './routes'
 import { isLoggedIn } from 'src/services/auth'
 
-export default defineRouter(function () {
+export default route(function () {
   const createHistory = process.env.SERVER
     ? createMemoryHistory
     : (process.env.VUE_ROUTER_MODE === 'history' ? createWebHistory : createWebHashHistory)
@@ -15,9 +20,17 @@ export default defineRouter(function () {
   })
 
   Router.beforeEach((to, from, next) => {
-    if (to.path.startsWith('/auth')) return next()
-    if (!isLoggedIn()) return next('/auth')
-    return next()
+    if (to.meta.requiresAuth && !isLoggedIn()) {
+      next('/auth')
+      return
+    }
+
+    if (to.path === '/auth' && isLoggedIn()) {
+      next('/')
+      return
+    }
+
+    next()
   })
 
   return Router
