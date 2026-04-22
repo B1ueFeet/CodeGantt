@@ -2,10 +2,20 @@ package com.bf.dtos;
 
 import com.bf.Model.TaskStatus;
 
+import java.math.BigDecimal;
 import java.time.OffsetDateTime;
+import java.util.List;
 import java.util.UUID;
 
 public class TaskDTOs {
+
+    public record AssigneeDTO(
+            UUID userId,
+            String firstName,
+            String lastName,
+            String username,
+            BigDecimal assignedHours
+    ) {}
 
     public record TaskCreateRequest(
             UUID projectId,
@@ -14,7 +24,10 @@ public class TaskDTOs {
             OffsetDateTime startAt,
             OffsetDateTime endAt,
             TaskStatus status,
-            Integer progress
+            Integer progress,
+            BigDecimal estimatedHours,
+            List<AssigneeDTO> assignees,
+            String externalUid
     ) {}
 
     public record TaskUpdateRequest(
@@ -23,7 +36,9 @@ public class TaskDTOs {
             OffsetDateTime startAt,
             OffsetDateTime endAt,
             TaskStatus status,
-            Integer progress
+            Integer progress,
+            BigDecimal estimatedHours,
+            List<AssigneeDTO> assignees
     ) {}
 
     public record TaskResponse(
@@ -34,6 +49,8 @@ public class TaskDTOs {
             OffsetDateTime startAt,
             OffsetDateTime endAt,
             TaskStatus status,
-            int progress
+            int progress,
+            BigDecimal estimatedHours,
+            List<AssigneeDTO> assignees
     ) {}
 }

@@ -6,7 +6,8 @@
       </div>
 
       <div class="text-h2" style="opacity:.4">
-        Oops. Nothing here...
+        Te saliste de la aplicacion prueba yend a a la pagina principal
+        No te preocupes, no es tu culpa, es que el enlace al que intentaste acceder no existe o fue movido.
       </div>
 
       <q-btn
@@ -21,6 +22,7 @@
     </div>
   </div>
 </template>
+
 
 <script>
 import { defineComponent } from 'vue';

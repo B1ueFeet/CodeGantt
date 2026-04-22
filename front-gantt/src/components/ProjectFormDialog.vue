@@ -25,12 +25,14 @@
         />
 
         <q-input
-          v-if="!isEdit"
-          v-model="form.ownerId"
-          label="Owner ID (UUID)"
+          v-model.number="form.userHourLimit"
+          label="Límite de horas por usuario"
           outlined
           dense
-          hint="Con tu backend actual, el create de project pide ownerId"
+          type="number"
+          min="0"
+          step="0.5"
+          hint="Ejemplo: 40"
         />
       </q-card-section>
 
@@ -64,7 +66,7 @@ export default {
       form: {
         name: '',
         description: '',
-        ownerId: ''
+        userHourLimit: 40
       }
     }
   },
@@ -82,7 +84,7 @@ export default {
         this.form = {
           name: value?.name || '',
           description: value?.description || '',
-          ownerId: value?.ownerId || ''
+          userHourLimit: Number(value?.userHourLimit ?? 40)
         }
       }
     }
@@ -90,7 +92,27 @@ export default {
 
   methods: {
     submitForm() {
-      this.$emit('save', { ...this.form })
+      if (!this.form.name || !this.form.name.trim()) {
+        this.$q.notify({
+          type: 'negative',
+          message: 'El nombre del proyecto es obligatorio'
+        })
+        return
+      }
+
+      if (Number(this.form.userHourLimit) < 0) {
+        this.$q.notify({
+          type: 'negative',
+          message: 'El límite de horas no puede ser negativo'
+        })
+        return
+      }
+
+      this.$emit('save', {
+        name: this.form.name.trim(),
+        description: this.form.description,
+        userHourLimit: Number(this.form.userHourLimit || 0)
+      })
     }
   }
 }

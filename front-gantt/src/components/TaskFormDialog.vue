@@ -1,6 +1,6 @@
 <template>
   <q-dialog :model-value="modelValue" @update:model-value="$emit('update:modelValue', $event)">
-    <q-card style="min-width: 420px; width: 100%; max-width: 700px;">
+    <q-card style="min-width: 460px; width: 100%; max-width: 760px;">
       <q-card-section class="row items-center q-pb-none">
         <div class="text-h6">{{ isEdit ? 'Editar tarea' : 'Nueva tarea' }}</div>
         <q-space />
@@ -27,21 +27,21 @@
         <div class="row q-col-gutter-md">
           <div class="col-12 col-md-6">
             <q-input
-              v-model="form.startDate"
-              label="Fecha inicio"
+              v-model="form.startAtLocal"
+              label="Inicio"
               outlined
               dense
-              type="date"
+              type="datetime-local"
             />
           </div>
 
           <div class="col-12 col-md-6">
             <q-input
-              v-model="form.endDate"
-              label="Fecha fin"
+              v-model="form.endAtLocal"
+              label="Fin"
               outlined
               dense
-              type="date"
+              type="datetime-local"
             />
           </div>
         </div>
@@ -59,7 +59,7 @@
             />
           </div>
 
-          <div class="col-12 col-md-6">
+          <div class="col-12 col-md-3">
             <q-input
               v-model.number="form.progress"
               label="Progreso (%)"
@@ -70,11 +70,22 @@
               max="100"
             />
           </div>
+
+          <div class="col-12 col-md-3">
+            <q-input
+              v-model.number="form.estimatedHours"
+              label="Horas estimadas"
+              outlined
+              dense
+              type="number"
+              min="0"
+              step="0.5"
+            />
+          </div>
         </div>
 
-        <q-banner dense rounded class="bg-grey-2 text-grey-8">
-          Con tu backend actual, si no usas horas reales, el timeline se renderiza por fechas.
-          Luego puedes migrar a startAt/endAt.
+        <q-banner dense rounded class="bg-blue-1 text-primary">
+          Esta versión ya guarda usando <strong>startAt</strong>, <strong>endAt</strong> y <strong>estimatedHours</strong>.
         </q-banner>
       </q-card-section>
 
@@ -114,10 +125,11 @@ export default {
       form: {
         name: '',
         description: '',
-        startDate: '',
-        endDate: '',
+        startAtLocal: '',
+        endAtLocal: '',
         status: 'TODO',
-        progress: 0
+        progress: 0,
+        estimatedHours: 0
       }
     }
   },
@@ -135,10 +147,11 @@ export default {
         this.form = {
           name: value?.name || '',
           description: value?.description || '',
-          startDate: value?.startDate || '',
-          endDate: value?.endDate || '',
+          startAtLocal: value?.startAtLocal || '',
+          endAtLocal: value?.endAtLocal || '',
           status: value?.status || 'TODO',
-          progress: value?.progress ?? 0
+          progress: Number(value?.progress ?? 0),
+          estimatedHours: Number(value?.estimatedHours ?? 0)
         }
       }
     }
@@ -146,7 +159,18 @@ export default {
 
   methods: {
     submitForm() {
-      this.$emit('save', { ...this.form })
+      if (!this.form.name || !this.form.name.trim()) {
+        this.$q.notify({
+          type: 'negative',
+          message: 'El nombre de la tarea es obligatorio'
+        })
+        return
+      }
+
+      this.$emit('save', {
+        ...this.form,
+        name: this.form.name.trim()
+      })
     }
   }
 }

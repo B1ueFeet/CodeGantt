@@ -3,9 +3,10 @@ package com.bf.resource;
 import jakarta.annotation.security.RolesAllowed;
 import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.MediaType;
-import com.bf.dtos.ProjectDTOs;
+
 import com.bf.Model.ProjectMember;
 import com.bf.Service.ProjectService;
+import com.bf.dtos.ProjectDTOs;
 
 import java.util.List;
 import java.util.UUID;
@@ -13,7 +14,7 @@ import java.util.UUID;
 @Path("/api/projects")
 @Produces(MediaType.APPLICATION_JSON)
 @Consumes(MediaType.APPLICATION_JSON)
-@RolesAllowed({"USER","ADMIN"})
+@RolesAllowed({ "USER", "ADMIN" })
 public class ProjectResource {
 
     private final ProjectService service;
@@ -34,6 +35,7 @@ public class ProjectResource {
     }
 
     @POST
+    @RolesAllowed({ "ADMIN", "PROJECT_LEAD" })
     public ProjectDTOs.ProjectResponse create(ProjectDTOs.ProjectCreateRequest req) {
         return service.create(req);
     }

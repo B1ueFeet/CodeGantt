@@ -9,20 +9,11 @@
       </div>
 
       <div class="col-12 col-md-auto">
-        <q-btn
-          color="primary"
-          icon="add"
-          label="Nuevo proyecto"
-          @click="openCreateProject"
-        />
+        <q-btn color="primary" icon="add" label="Nuevo proyecto" @click="openCreateProject" />
       </div>
     </div>
 
-    <q-banner
-      v-if="error"
-      class="bg-red-1 text-negative q-mb-md"
-      rounded
-    >
+    <q-banner v-if="error" class="bg-red-1 text-negative q-mb-md" rounded>
       {{ error }}
     </q-banner>
 
@@ -32,26 +23,15 @@
           <q-card-section class="row items-center">
             <div class="text-h6">Proyectos</div>
             <q-space />
-            <q-btn
-              dense
-              flat
-              round
-              icon="refresh"
-              @click="loadProjects"
-            />
+            <q-btn dense flat round icon="refresh" @click="loadProjects" />
           </q-card-section>
 
           <q-separator />
 
           <q-list separator>
-            <q-item
-              v-for="project in projects"
-              :key="project.id"
-              clickable
-              :active="selectedProject && selectedProject.id === project.id"
-              active-class="bg-blue-1 text-primary"
-              @click="selectProject(project)"
-            >
+            <q-item v-for="project in projects" :key="project.id" clickable
+              :active="selectedProject && selectedProject.id === project.id" active-class="bg-blue-1 text-primary"
+              @click="selectProject(project)">
               <q-item-section>
                 <q-item-label>{{ project.name }}</q-item-label>
                 <q-item-label caption>
@@ -61,22 +41,8 @@
 
               <q-item-section side>
                 <div class="row q-gutter-xs">
-                  <q-btn
-                    flat
-                    dense
-                    round
-                    icon="edit"
-                    color="primary"
-                    @click.stop="openEditProject(project)"
-                  />
-                  <q-btn
-                    flat
-                    dense
-                    round
-                    icon="delete"
-                    color="negative"
-                    @click.stop="confirmDeleteProject(project)"
-                  />
+                  <q-btn flat dense round icon="edit" color="primary" @click.stop="openEditProject(project)" />
+                  <q-btn flat dense round icon="delete" color="negative" @click.stop="confirmDeleteProject(project)" />
                 </div>
               </q-item-section>
             </q-item>
@@ -101,15 +67,15 @@
                 </div>
               </div>
 
-              <div class="col-auto">
-                <q-btn-toggle
-                  v-model="viewMode"
-                  toggle-color="primary"
-                  :options="[
-                    { label: 'Tablero', value: 'board' },
-                    { label: 'Timeline', value: 'gantt' }
-                  ]"
-                />
+              <div class="col-auto row items-center q-gutter-sm">
+                <q-btn color="primary" icon="add" label="Nueva tarea" @click="openCreateTask('TODO')" />
+
+                <q-btn-toggle v-model="viewMode" toggle-color="primary" :options="[
+                  { label: 'Tablero', value: 'board' },
+                  { label: 'Gantt', value: 'gantt' }
+                ]" />
+
+                <q-btn flat dense icon="file_upload" label="Importar XML" @click="importDialog = true" />
               </div>
             </div>
           </q-card-section>
@@ -122,22 +88,14 @@
           </q-card-section>
 
           <q-card-section v-else>
-            <kanban-board
-              v-if="viewMode === 'board'"
-              :tasks="tasks"
-              @create-task="openCreateTask"
-              @edit-task="openEditTask"
-              @delete-task="confirmDeleteTask"
-              @move-task="moveTask"
-            />
+            <kanban-board v-if="viewMode === 'board'" :tasks="tasks" @create-task="openCreateTask"
+              @edit-task="openEditTask" @delete-task="confirmDeleteTask" @move-task="moveTask" />
 
-            <gantt-timeline
-              v-else
-              :tasks="tasks"
-              :scale="ganttScale"
-              @update:scale="ganttScale = $event"
-            />
+            <gantt-timeline v-else :tasks="tasks" :scale="ganttScale" @update:scale="ganttScale = $event" />
           </q-card-section>
+
+          <import-ms-project-dialog v-model="importDialog" :project-id="selectedProject?.id"
+            @imported="() => loadTasks(selectedProject.id)" />
         </q-card>
 
         <q-card flat bordered v-else>
@@ -152,22 +110,14 @@
       </div>
     </div>
 
-    <project-form-dialog
-      v-model="projectDialog"
-      :project="editingProject"
-      @save="saveProject"
-    />
+    <project-form-dialog v-model="projectDialog" :project="editingProject" @save="saveProject" />
 
-    <task-form-dialog
-      v-model="taskDialog"
-      :task="editingTask"
-      @save="saveTask"
-    />
+    <task-form-dialog v-model="taskDialog" :task="editingTask" @save="saveTask" />
   </q-page>
 </template>
 
 <script>
-import { Notify, Dialog } from 'quasar'
+import { Dialog } from 'quasar'
 import { getSession } from 'src/services/auth'
 import {
   getProjects,
@@ -186,6 +136,7 @@ import ProjectFormDialog from 'src/components/ProjectFormDialog.vue'
 import TaskFormDialog from 'src/components/TaskFormDialog.vue'
 import KanbanBoard from 'src/components/KanbanBoard.vue'
 import GanttTimeline from 'src/components/GanttTimeline.vue'
+import ImportMsProjectDialog from 'src/components/ImportMsProjectDialog.vue'
 
 export default {
   name: 'IndexPage',
@@ -194,7 +145,8 @@ export default {
     ProjectFormDialog,
     TaskFormDialog,
     KanbanBoard,
-    GanttTimeline
+    GanttTimeline,
+    ImportMsProjectDialog
   },
 
   data() {
@@ -209,8 +161,9 @@ export default {
       taskDialog: false,
       editingProject: null,
       editingTask: null,
-      viewMode: 'board',
-      ganttScale: 'days',
+      importDialog: false,
+      viewMode: 'gantt',
+      ganttScale: 'months',
       pendingTaskStatus: 'TODO',
       session: null
     }
@@ -222,6 +175,14 @@ export default {
   },
 
   methods: {
+    notify(type, message) {
+      if (this.$q && typeof this.$q.notify === 'function') {
+        this.$q.notify({ type, message })
+      } else {
+        console.log(type, message)
+      }
+    },
+
     async loadProjects() {
       this.loadingProjects = true
       this.error = ''
@@ -235,9 +196,9 @@ export default {
         }
 
         if (this.selectedProject) {
-          const updatedSelected = this.projects.find(p => p.id === this.selectedProject.id)
-          if (updatedSelected) {
-            this.selectedProject = updatedSelected
+          const current = this.projects.find(p => p.id === this.selectedProject.id)
+          if (current) {
+            this.selectedProject = current
           }
         }
       } catch (error) {
@@ -257,7 +218,8 @@ export default {
       this.error = ''
 
       try {
-        this.tasks = await getTasksByProject(projectId)
+        const data = await getTasksByProject(projectId)
+        this.tasks = data.map((task, index) => this.normalizeTask(task, index))
       } catch (error) {
         this.error = this.extractError(error, 'No se pudieron cargar las tareas')
       } finally {
@@ -265,53 +227,61 @@ export default {
       }
     },
 
+    normalizeTask(task, index = 0) {
+      const startDate = this.toDateOnly(task.startAt) || this.todayIso()
+      const endDate = this.toDateOnly(task.endAt) || startDate
+
+      return {
+        ...task,
+        wbs: task.wbs || `${index + 1}`,
+        level: Number(task.level || 0),
+        startDate,
+        endDate,
+        startAtLocal: this.toInputDateTime(task.startAt) || `${startDate}T08:00`,
+        endAtLocal: this.toInputDateTime(task.endAt) || `${endDate}T17:00`,
+        estimatedHours: Number(task.estimatedHours || 0),
+        assignees: Array.isArray(task.assignees) ? task.assignees : []
+      }
+    },
+
     openCreateProject() {
       this.editingProject = {
         name: '',
         description: '',
-        ownerId: this.session?.sub || ''
+        userHourLimit: 40
       }
       this.projectDialog = true
     },
 
     openEditProject(project) {
-      this.editingProject = { ...project }
+      this.editingProject = {
+        ...project,
+        userHourLimit: Number(project.userHourLimit ?? 40)
+      }
       this.projectDialog = true
     },
 
     async saveProject(form) {
       try {
+        const payload = {
+          name: form.name,
+          description: form.description,
+          userHourLimit: Number(form.userHourLimit || 0)
+        }
+
         if (this.editingProject && this.editingProject.id) {
-          await updateProject(this.editingProject.id, {
-            name: form.name,
-            description: form.description
-          })
-
-          Notify.create({
-            type: 'positive',
-            message: 'Proyecto actualizado'
-          })
+          await updateProject(this.editingProject.id, payload)
+          this.notify('positive', 'Proyecto actualizado')
         } else {
-          await createProject({
-            name: form.name,
-            description: form.description,
-            ownerId: form.ownerId
-          })
-
-          Notify.create({
-            type: 'positive',
-            message: 'Proyecto creado'
-          })
+          await createProject(payload)
+          this.notify('positive', 'Proyecto creado')
         }
 
         this.projectDialog = false
         this.editingProject = null
         await this.loadProjects()
       } catch (error) {
-        Notify.create({
-          type: 'negative',
-          message: this.extractError(error, 'No se pudo guardar el proyecto')
-        })
+        this.notify('negative', this.extractError(error, 'No se pudo guardar el proyecto'))
       }
     },
 
@@ -330,36 +300,37 @@ export default {
             this.tasks = []
           }
 
-          Notify.create({
-            type: 'positive',
-            message: 'Proyecto eliminado'
-          })
-
+          this.notify('positive', 'Proyecto eliminado')
           await this.loadProjects()
         } catch (error) {
-          Notify.create({
-            type: 'negative',
-            message: this.extractError(error, 'No se pudo eliminar el proyecto')
-          })
+          this.notify('negative', this.extractError(error, 'No se pudo eliminar el proyecto'))
         }
       })
     },
 
     openCreateTask(status) {
       this.pendingTaskStatus = status || 'TODO'
+
       this.editingTask = {
         name: '',
         description: '',
-        startDate: this.todayIso(),
-        endDate: this.todayIso(),
+        startAtLocal: `${this.todayIso()}T08:00`,
+        endAtLocal: `${this.todayIso()}T17:00`,
         status: this.pendingTaskStatus,
-        progress: 0
+        progress: 0,
+        estimatedHours: 8
       }
+
       this.taskDialog = true
     },
 
     openEditTask(task) {
-      this.editingTask = { ...task }
+      this.editingTask = {
+        ...task,
+        startAtLocal: task.startAtLocal || this.toInputDateTime(task.startAt) || `${this.todayIso()}T08:00`,
+        endAtLocal: task.endAtLocal || this.toInputDateTime(task.endAt) || `${this.todayIso()}T17:00`,
+        estimatedHours: Number(task.estimatedHours || 0)
+      }
       this.taskDialog = true
     },
 
@@ -369,43 +340,41 @@ export default {
       }
 
       try {
+        const startAt = this.toApiDateTime(form.startAtLocal)
+        const endAt = this.toApiDateTime(form.endAtLocal) || startAt
+
         if (this.editingTask && this.editingTask.id) {
           await updateTask(this.editingTask.id, {
             name: form.name,
             description: form.description,
-            startDate: form.startDate || null,
-            endDate: form.endDate || null,
+            startAt,
+            endAt,
             status: form.status,
-            progress: form.progress || 0
+            progress: Number(form.progress || 0),
+            estimatedHours: Number(form.estimatedHours || 0)
           })
 
-          Notify.create({
-            type: 'positive',
-            message: 'Tarea actualizada'
-          })
+          this.notify('positive', 'Tarea actualizada')
         } else {
           await createTask({
             projectId: this.selectedProject.id,
             name: form.name,
             description: form.description,
-            startDate: form.startDate || this.todayIso(),
-            endDate: form.endDate || this.todayIso()
+            startAt,
+            endAt,
+            status: form.status || 'TODO',
+            progress: Number(form.progress || 0),
+            estimatedHours: Number(form.estimatedHours || 0)
           })
 
-          Notify.create({
-            type: 'positive',
-            message: 'Tarea creada'
-          })
+          this.notify('positive', 'Tarea creada')
         }
 
         this.taskDialog = false
         this.editingTask = null
         await this.loadTasks(this.selectedProject.id)
       } catch (error) {
-        Notify.create({
-          type: 'negative',
-          message: this.extractError(error, 'No se pudo guardar la tarea')
-        })
+        this.notify('negative', this.extractError(error, 'No se pudo guardar la tarea'))
       }
     },
 
@@ -418,18 +387,10 @@ export default {
       }).onOk(async () => {
         try {
           await deleteTask(task.id)
-
-          Notify.create({
-            type: 'positive',
-            message: 'Tarea eliminada'
-          })
-
+          this.notify('positive', 'Tarea eliminada')
           await this.loadTasks(this.selectedProject.id)
         } catch (error) {
-          Notify.create({
-            type: 'negative',
-            message: this.extractError(error, 'No se pudo eliminar la tarea')
-          })
+          this.notify('negative', this.extractError(error, 'No se pudo eliminar la tarea'))
         }
       })
     },
@@ -439,35 +400,23 @@ export default {
         await updateTask(task.id, {
           name: task.name,
           description: task.description,
-          startDate: task.startDate,
-          endDate: task.endDate,
+          startAt: task.startAt || this.toApiDateTime(task.startAtLocal),
+          endAt: task.endAt || this.toApiDateTime(task.endAtLocal),
           status: nextStatus,
-          progress: this.progressForStatus(nextStatus, task.progress)
+          progress: this.progressForStatus(nextStatus, task.progress),
+          estimatedHours: Number(task.estimatedHours || 0)
         })
 
-        Notify.create({
-          type: 'positive',
-          message: `Tarea movida a ${nextStatus}`
-        })
-
+        this.notify('positive', `Tarea movida a ${nextStatus}`)
         await this.loadTasks(this.selectedProject.id)
       } catch (error) {
-        Notify.create({
-          type: 'negative',
-          message: this.extractError(error, 'No se pudo mover la tarea')
-        })
+        this.notify('negative', this.extractError(error, 'No se pudo mover la tarea'))
       }
     },
 
     progressForStatus(status, currentProgress) {
-      if (status === 'DONE') {
-        return 100
-      }
-
-      if (status === 'TODO' && currentProgress === 100) {
-        return 0
-      }
-
+      if (status === 'DONE') return 100
+      if (status === 'TODO' && currentProgress === 100) return 0
       return currentProgress || 0
     },
 
@@ -486,6 +435,25 @@ export default {
       const month = String(d.getMonth() + 1).padStart(2, '0')
       const day = String(d.getDate()).padStart(2, '0')
       return `${year}-${month}-${day}`
+    },
+
+    toDateOnly(value) {
+      if (!value) return ''
+      return String(value).slice(0, 10)
+    },
+
+    toInputDateTime(value) {
+      if (!value) return ''
+      return String(value).slice(0, 16)
+    },
+
+    toApiDateTime(value) {
+      if (!value) return null
+
+      const date = new Date(value)
+      if (Number.isNaN(date.getTime())) return null
+
+      return date.toISOString()
     }
   }
 }

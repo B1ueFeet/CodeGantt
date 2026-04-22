@@ -19,6 +19,7 @@ public class TokenService {
       .subject(user.id.toString())
       .upn(user.username)
       .groups(Set.of(user.role))          // roles via groups (RBAC)
+      .claim("roles", Set.of(user.role)) // also expose as 'roles' claim for back-gantt mapping
       .claim("email", user.email)
       .expiresIn(Duration.ofHours(8))
       .sign();

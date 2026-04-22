@@ -65,6 +65,7 @@ public class ProjectService {
         p.name = req.name().trim();
         p.description = req.description();
         p.owner = owner;
+        p.userHourLimit = req.userHourLimit() != null ? req.userHourLimit() : BigDecimal.valueOf(40);
         p.createdAt = OffsetDateTime.now();
         p.updatedAt = OffsetDateTime.now();
 
@@ -88,6 +89,13 @@ public class ProjectService {
 
         if (req.description() != null) {
             p.description = req.description();
+        }
+
+        if (req.userHourLimit() != null) {
+            if (req.userHourLimit().compareTo(BigDecimal.ZERO) < 0) {
+                throw new IllegalArgumentException("userHourLimit no puede ser negativo");
+            }
+            p.userHourLimit = req.userHourLimit();
         }
 
         p.updatedAt = OffsetDateTime.now();
@@ -163,7 +171,8 @@ public class ProjectService {
                 p.id,
                 p.name,
                 p.description,
-                p.owner.id
+                p.owner.id,
+                p.userHourLimit
         );
     }
 }

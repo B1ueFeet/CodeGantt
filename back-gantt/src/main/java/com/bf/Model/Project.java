@@ -3,6 +3,7 @@ package com.bf.Model;
 import io.quarkus.hibernate.orm.panache.PanacheEntityBase;
 import jakarta.persistence.*;
 
+import java.math.BigDecimal;
 import java.time.OffsetDateTime;
 import java.util.UUID;
 
@@ -24,6 +25,9 @@ public class Project extends PanacheEntityBase {
     @JoinColumn(name = "owner_id", nullable = false)
     public AppUser owner;
 
+    @Column(name = "user_hour_limit", nullable = false, precision = 10, scale = 2)
+    public BigDecimal userHourLimit;
+
     @Column(name = "created_at", nullable = false)
     public OffsetDateTime createdAt;
 
@@ -37,10 +41,12 @@ public class Project extends PanacheEntityBase {
         var now = OffsetDateTime.now();
         createdAt = now;
         updatedAt = now;
+        if (userHourLimit == null) userHourLimit = BigDecimal.ZERO;
     }
 
     @PreUpdate
     void preUpdate() {
         updatedAt = OffsetDateTime.now();
+        if (userHourLimit == null) userHourLimit = BigDecimal.ZERO;
     }
 }

@@ -3,12 +3,17 @@ package com.bf.Model;
 import io.quarkus.hibernate.orm.panache.PanacheEntityBase;
 import jakarta.persistence.*;
 
+import java.math.BigDecimal;
 import java.time.OffsetDateTime;
 import java.util.UUID;
 
 @Entity
 @Table(name = "task")
 public class Task extends PanacheEntityBase {
+
+    @Column(name = "external_uid")
+    public String externalUid;
+
 
     @Id
     @Column(columnDefinition = "uuid")
@@ -23,7 +28,7 @@ public class Task extends PanacheEntityBase {
 
     @Column(columnDefinition = "text")
     public String description;
-
+    
     @Column(name = "start_at", nullable = false)
     public OffsetDateTime startAt;
 
@@ -36,6 +41,9 @@ public class Task extends PanacheEntityBase {
 
     @Column(nullable = false)
     public int progress; // 0..100
+
+    @Column(name = "estimated_hours", nullable = false, precision = 10, scale = 2)
+    public BigDecimal estimatedHours;
 
     @Column(name = "created_at", nullable = false)
     public OffsetDateTime createdAt;
@@ -72,6 +80,8 @@ public class Task extends PanacheEntityBase {
         if (progress > 100) {
             progress = 100;
         }
+
+        if (estimatedHours == null) estimatedHours = BigDecimal.ZERO;
     }
 
     @PreUpdate
@@ -85,5 +95,7 @@ public class Task extends PanacheEntityBase {
         if (progress > 100) {
             progress = 100;
         }
+
+        if (estimatedHours == null) estimatedHours = BigDecimal.ZERO;
     }
 }
